@@ -50,6 +50,11 @@
 
   </div>
 </div>
+<div v-else>
+    <div class="flex justify-center items-center  mt-8">
+      <span class="text-1xl font-medium">Loading....</span>
+    </div>
+  </div>
 </template>
 
 <script>

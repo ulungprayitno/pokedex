@@ -5,9 +5,11 @@ export default function() {
   const state = reactive({
     response: [],
     detail: '',
+    types: [],
     next: null,
     error: null,
-    fetching: false
+    fetching: false,
+    filter: false
   });
 
   const fetchData = async (url) => {
@@ -31,8 +33,9 @@ export default function() {
         })
       )
 
-      state.response = [...state.response, ...response]
+      state.response = state.filter ? response : [...state.response, ...response]
       state.next = res.data.next
+      state.filter = false
     } catch (errors) {
       state.error = errors;
     } finally {
@@ -55,7 +58,48 @@ export default function() {
     } finally {
       state.fetching = false;
     }
+  };
+
+  const getTypes = async () => {
+    state.fetching = true;
+    try {
+      const res = await api.get(`/type`)
+      state.types = res.data.results
+    } catch (errors) {
+      state.error = errors;
+    } finally {
+      state.fetching = false;
+    }
   }
 
-  return {state, fetchData, fetchMore, getById};
+  const fetchDataFilter = async (name) => {
+    state.fetching = true;
+    try {
+      const res = await api.get(`/type/${name}`)
+      if(res){
+        let response = await Promise.all(
+          res.data.pokemon.map(async item => {
+            const p = await api.get(`/pokemon/${item.pokemon.name}`)
+            const pokemon = p.data
+            if(pokemon){
+              return {
+                id: pokemon.id,
+                name: pokemon.name,
+                types: pokemon.types,
+                sprites: pokemon.sprites
+              }            
+            }
+          })
+        )
+        state.response = response
+        state.filter = true
+      }
+    } catch (errors) {
+      state.error = errors;
+    } finally {
+      state.fetching = false;
+    }
+  }
+
+  return {state, fetchData, fetchMore, getById, getTypes, fetchDataFilter};
 }
