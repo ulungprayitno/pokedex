@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!state.fetching">
+  <div v-if="!state.fetchingFilter">
     <div class="flex justify-end  mt-4">
       <select v-model="selectedType" @change="selectType" class="w-48 bg-gray-200 rounded-md p-2 border-black-500">
         <option disabled value="null">Please select one</option>
@@ -8,20 +8,28 @@
       </select>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 mt-8" ref="scrollComponent">
-      <div class="bg-gray-300 rounded-2xl cursor-pointer" v-for="x in state.response" :key="x">
+      <div class="bg-gray-300 rounded-2xl" v-for="x in state.response" :key="x">
         <router-link :to="'/pokemon/' + x.name">
-          <div class="mx-4 mt-2 text-4xl font-medium">
+          <div class="mx-4 mt-2 text-4xl font-medium cursor-pointer">
           {{x.name}}
           </div>
+        </router-link>
 
           <div>
-            <span v-for="(item, i) in x.types" :key="i" class="ml-4 bg-green-300 py-1 px-2 rounded text-xs">{{item.type.name}}</span>
+            <span v-for="(item, i) in x.types" :key="i" class="ml-4 bg-gray-600 py-1 px-2 rounded text-xs text-white">{{item.type.name}}</span>
           </div>
 
-          <div class="flex items-end justify-end h-24">
-            <img :src="x.sprites.front_default" class="w-auto"/>
+          <div class="flex items-end justify-between h-24">
+            <div class="mx-4 my-2">
+              <button v-if="!favorite.find(fav => fav.id === x.id)" type="button" class="bg-green-600 rounded-lg text-xs px-2 py-1 text-white" @click="addFavorite(x)">Add to Favorite</button>
+              <button v-else type="button" class="bg-red-600 rounded-lg text-xs px-2 py-1 text-white" @click="removeFavorite(x.id)">Remove from Favorite</button>
+            </div>
+            <div class="bg-gray-200 rounded-full my-2 p-4 lg:w-auto w-24 cursor-pointer">
+              <router-link :to="'/pokemon/' + x.name">
+                <img :src="x.sprites.front_default"/>
+              </router-link>
+              </div>
           </div>
-        </router-link>
       </div>
     </div>
   </div>
@@ -33,14 +41,17 @@
 </template>
 
 <script>
-import { ref, onBeforeMount, onMounted, onUnmounted } from 'vue'
+import { ref, onBeforeMount, onMounted, onUnmounted, computed } from 'vue'
 import useFetch from '../services/use-fetch'
+import { useStore } from "vuex";
 
 export default {
   setup() {
     const { state, fetchData, fetchMore, getTypes, fetchDataFilter } = useFetch()
     const scrollComponent = ref(null)
     const selectedType = ref(null)
+    const store = useStore();
+    const favorite = computed(() => store.state.favorites);
 
     onBeforeMount(async () => {
         await fetchData()
@@ -65,7 +76,15 @@ export default {
       else fetchDataFilter(selectedType.value)
     }
 
-    return { state, scrollComponent, selectedType, selectType }
+    const addFavorite = (data) => {
+      store.dispatch("saveFavorite", data);
+    }
+
+    const removeFavorite = (id) => {
+      store.dispatch("removeFavorite", id);
+    }
+
+    return { state, scrollComponent, selectedType, selectType, addFavorite, removeFavorite, favorite }
   },
 }
 </script>

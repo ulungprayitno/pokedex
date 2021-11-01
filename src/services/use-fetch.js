@@ -9,6 +9,7 @@ export default function() {
     next: null,
     error: null,
     fetching: false,
+    fetchingFilter: false,
     filter: false
   });
 
@@ -74,6 +75,7 @@ export default function() {
 
   const fetchDataFilter = async (name) => {
     state.fetching = true;
+    state.fetchingFilter = true
     try {
       const res = await api.get(`/type/${name}`)
       if(res){
@@ -98,6 +100,7 @@ export default function() {
       state.error = errors;
     } finally {
       state.fetching = false;
+      state.fetchingFilter = false
     }
   }
 
