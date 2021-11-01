@@ -4,7 +4,7 @@ import api from '../utils/api'
 export default function() {
   const state = reactive({
     response: [],
-    detail: null,
+    detail: '',
     next: null,
     error: null,
     fetching: false
@@ -46,10 +46,10 @@ export default function() {
   };
 
   const getById = async (name) => {
+    state.fetching = true;
     try {
       const res = await api.get(`/pokemon/${name}`)
       state.detail = res.data 
-      console.log(state.detail)
     } catch (errors) {
       state.error = errors;
     } finally {
