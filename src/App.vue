@@ -1,6 +1,6 @@
 <template>
   <Navbar />
-  <div class="px-4 py-20">
+  <div class="mx-16 py-20">
     <router-view />
   </div>
 </template>
